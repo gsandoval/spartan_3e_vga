@@ -1,0 +1,8 @@
+INTSTYLE=ise
+INFILE=C:\Users\darchitect\Documents\workspaces\fpga\vga\Main.ncd
+OUTFILE=C:\Users\darchitect\Documents\workspaces\fpga\vga\Main.bit
+FAMILY=Spartan3E
+PART=xc3s500e-4fg320
+WORKINGDIR=C:\Users\darchitect\Documents\workspaces\fpga\vga
+LICENSE=WebPack
+USER_INFO=210632512_0_0_852
