@@ -67,14 +67,14 @@ architecture Behavioral of Main is
 	signal ballsize : unsigned(5 downto 0) := "001010"; -- 10
 	signal xincrement : integer := 1;
 	signal yincrement : integer := 1;
-	signal pallet_width : unsigned(5 downto 0) := "001010"; -- 10
-	signal pallet_height : unsigned(6 downto 0) := "1111000"; -- 120
-	signal pallet1_ypos : unsigned(10 downto 0) := "00011110000"; -- 240
-	signal pallet2_ypos : unsigned(10 downto 0) := "00011110000"; -- 240
-	signal pallet1_xpos : unsigned(10 downto 0) := "00000001010"; -- 10
-	signal pallet2_xpos : unsigned(10 downto 0) := "01100001100"; -- 780
-	signal pallet1_increment : integer := 0;
-	signal pallet2_increment : integer := 0;
+	signal palette_width : unsigned(5 downto 0) := "001010"; -- 10
+	signal palette_height : unsigned(6 downto 0) := "1111000"; -- 120
+	signal palette1_ypos : unsigned(10 downto 0) := "00011110000"; -- 240
+	signal palette2_ypos : unsigned(10 downto 0) := "00011110000"; -- 240
+	signal palette1_xpos : unsigned(10 downto 0) := "00000001010"; -- 10
+	signal palette2_xpos : unsigned(10 downto 0) := "01100001100"; -- 780
+	signal palette1_increment : integer := 0;
+	signal palette2_increment : integer := 0;
 	signal xball_limit, yball_limit : unsigned(10 downto 0);
 	signal xpalette1_limit, ypalette1_limit : unsigned(10 downto 0);
 	signal xpalette2_limit, ypalette2_limit : unsigned(10 downto 0);
@@ -99,40 +99,65 @@ begin
 		blank => blank
 	);
 	
-	xballpos <= xballpos + xincrement when rising_edge(animation_clock(17)) else xballpos;
-	yballpos <= yballpos + yincrement when rising_edge(animation_clock(17)) else yballpos;
 	xball_limit <= xballpos + ballsize;
 	yball_limit <= yballpos + ballsize;
-	pallet1_ypos <= pallet1_ypos + pallet1_increment when rising_edge(animation_clock(16)) else pallet1_ypos;
-	pallet2_ypos <= pallet2_ypos + pallet2_increment when rising_edge(animation_clock(16)) else pallet2_ypos;
-	xpalette1_limit <= pallet1_xpos + pallet_width;
-	ypalette1_limit <= pallet1_ypos + pallet_height;
-	xpalette2_limit <= pallet2_xpos + pallet_width;
-	ypalette2_limit <= pallet2_ypos + pallet_height;
+	palette1_ypos <= palette1_ypos + palette1_increment when rising_edge(animation_clock(16)) else palette1_ypos;
+	palette2_ypos <= palette2_ypos + palette2_increment when rising_edge(animation_clock(16)) else palette2_ypos;
+	xpalette1_limit <= palette1_xpos + palette_width;
+	ypalette1_limit <= palette1_ypos + palette_height;
+	xpalette2_limit <= palette2_xpos + palette_width;
+	ypalette2_limit <= palette2_ypos + palette_height;
+	
+	xball_movement : process(animation_clock(17), xincrement)
+	begin
+		if (rising_edge(animation_clock(17))) then
+			xballpos <= xballpos + xincrement;
+			if (mode = "100") then
+				if (xballpos <= 0) then
+					xballpos <= "00110010000"; -- 400
+				end if;
+			elsif (mode = "101") then
+				if (xballpos <= 0 or xball_limit >= 800) then
+					xballpos <= "00110010000"; -- 400
+				end if;
+			end if;
+		end if;
+	end process;
+	
+	yball_movement : process(animation_clock(17), yincrement)
+	begin
+		if (rising_edge(animation_clock(17))) then
+			yballpos <= yballpos + yincrement;
+		end if;
+	end process;
 	
 	move_ball : process(animation_clock(17), xballpos, yballpos)
 	begin
 		if (rising_edge(animation_clock(17))) then
 			if (mode = "100" or mode = "101") then
-				if (xballpos <= xpalette1_limit and yballpos <= ypalette1_limit and yball_limit >= pallet1_ypos) then
+				if (xballpos <= xpalette1_limit and xballpos > palette1_xpos and
+					yballpos <= ypalette1_limit and yball_limit >= palette1_ypos) then
 					xincrement <= 1;
-				elsif (xball_limit >= pallet1_xpos and yballpos <= ypalette1_limit and yball_limit >= pallet1_ypos) then
+				elsif (xball_limit >= palette1_xpos and xball_limit < xpalette1_limit and
+					yballpos <= ypalette1_limit and yball_limit >= palette1_ypos) then
 					xincrement <= -1;
-				elsif (yballpos <= ypalette1_limit and xballpos <= xpalette1_limit and xball_limit >= pallet1_xpos) then
+				elsif (yballpos <= ypalette1_limit and xballpos <= xpalette1_limit and xball_limit >= palette1_xpos) then
 					yincrement <= 1;
-				elsif (yball_limit >= pallet1_ypos and xballpos <= xpalette1_limit and xball_limit >= pallet1_xpos) then
+				elsif (yball_limit >= palette1_ypos and xballpos <= xpalette1_limit and xball_limit >= palette1_xpos) then
 					yincrement <= -1;
 				end if;
 			end if;
 			
 			if (mode = "101") then
-				if (xballpos <= xpalette2_limit and yballpos <= ypalette2_limit and yball_limit >= pallet2_ypos) then
+				if (xballpos <= xpalette2_limit and xballpos > palette2_xpos and
+					yballpos <= ypalette2_limit and yball_limit >= palette2_ypos) then
 					xincrement <= 1;
-				elsif (xball_limit >= pallet2_xpos and yballpos <= ypalette2_limit and yball_limit >= pallet2_ypos) then
+				elsif (xball_limit >= palette2_xpos and xball_limit < xpalette2_limit and
+					yballpos <= ypalette2_limit and yball_limit >= palette2_ypos) then
 					xincrement <= -1;
-				elsif (yballpos <= ypalette2_limit and xballpos <= xpalette2_limit and xball_limit >= pallet2_xpos) then
+				elsif (yballpos <= ypalette2_limit and xballpos <= xpalette2_limit and xball_limit >= palette2_xpos) then
 					yincrement <= 1;
-				elsif (yball_limit >= pallet2_ypos and xballpos <= xpalette2_limit and xball_limit >= pallet2_xpos) then
+				elsif (yball_limit >= palette2_ypos and xballpos <= xpalette2_limit and xball_limit >= palette2_xpos) then
 					yincrement <= -1;
 				end if;
 			end if;
@@ -155,19 +180,19 @@ begin
 	begin
 		if (rising_edge(animation_clock(16)) and (mode = "100" or mode = "101")) then
 			if (player1up = '1' and player1down = '0') then
-				if (pallet1_ypos > 10) then
-					pallet1_increment <= -1;
+				if (palette1_ypos > 10) then
+					palette1_increment <= -1;
 				else
-					pallet1_increment <= 0;
+					palette1_increment <= 0;
 				end if;
 			elsif (player1up = '0' and player1down = '1') then
 				if (ypalette1_limit < 590) then
-					pallet1_increment <= 1;
+					palette1_increment <= 1;
 				else
-					pallet1_increment <= 0;
+					palette1_increment <= 0;
 				end if;
 			else
-				pallet1_increment <= 0;
+				palette1_increment <= 0;
 			end if;
 		end if;
 	end process;
@@ -176,19 +201,19 @@ begin
 	begin
 		if (rising_edge(animation_clock(16)) and mode = "101") then
 			if (player2up = '1' and player2down = '0') then
-				if (pallet2_ypos > 10) then
-					pallet2_increment <= -1;
+				if (palette2_ypos > 10) then
+					palette2_increment <= -1;
 				else
-					pallet2_increment <= 0;
+					palette2_increment <= 0;
 				end if;
 			elsif (player2up = '0' and player2down = '1') then
 				if (ypalette2_limit < 590) then
-					pallet2_increment <= 1;
+					palette2_increment <= 1;
 				else
-					pallet2_increment <= 0;
+					palette2_increment <= 0;
 				end if;
 			else
-				pallet2_increment <= 0;
+				palette2_increment <= 0;
 			end if;
 		end if;
 	end process;
@@ -219,7 +244,7 @@ begin
 				xpos := unsigned(hpos);
 				ypos := unsigned(vpos);
 				if ((xpos >= xballpos and xpos < xball_limit and ypos >= yballpos and ypos < yball_limit) or 
-					(xpos >= pallet1_xpos and xpos < xpalette1_limit and ypos >= pallet1_ypos and ypos < ypalette1_limit)) then
+					(xpos >= palette1_xpos and xpos < xpalette1_limit and ypos >= palette1_ypos and ypos < ypalette1_limit)) then
 					rgb <= "111";
 				else
 					rgb <= "100";
@@ -228,8 +253,8 @@ begin
 				xpos := unsigned(hpos);
 				ypos := unsigned(vpos);
 				if ((xpos >= xballpos and xpos < xball_limit and ypos >= yballpos and ypos < yball_limit) or 
-					(xpos >= pallet1_xpos and xpos < xpalette1_limit and ypos >= pallet1_ypos and ypos < ypalette1_limit) or
-					(xpos >= pallet2_xpos and xpos < xpalette2_limit and ypos >= pallet2_ypos and ypos < ypalette2_limit)) then
+					(xpos >= palette1_xpos and xpos < xpalette1_limit and ypos >= palette1_ypos and ypos < ypalette1_limit) or
+					(xpos >= palette2_xpos and xpos < xpalette2_limit and ypos >= palette2_ypos and ypos < ypalette2_limit)) then
 					rgb <= "111";
 				else
 					rgb <= "100";

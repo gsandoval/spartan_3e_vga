@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <report-views version="2.0" >
  <header>
-  <DateModified>2012-05-30T04:39:11</DateModified>
+  <DateModified>2012-05-30T10:44:01</DateModified>
   <ModuleName>Main</ModuleName>
-  <SummaryTimeStamp>2012-05-30T04:38:29</SummaryTimeStamp>
+  <SummaryTimeStamp>2012-05-30T10:40:22</SummaryTimeStamp>
   <SavedFilePath>C:/Users/darchitect/Documents/workspaces/fpga/vga/iseconfig/Main.xreport</SavedFilePath>
   <ImplementationReportsDirectory>C:/Users/darchitect/Documents/workspaces/fpga/vga</ImplementationReportsDirectory>
   <DateInitialized>2012-05-30T02:20:25</DateInitialized>
